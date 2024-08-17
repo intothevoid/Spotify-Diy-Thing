@@ -18,6 +18,9 @@ unsigned long requestDueTime;              // time when request due
 unsigned long delayBetweenProgressUpdates = 500; // Time between requests (0.5 seconds)
 unsigned long progressDueTime;                   // time when request due
 
+bool isTrackPlaying = false; // If track is playing, update status
+bool isShuffleEnabled = false; // If shuffle is enabled, update shuffle status
+
 void spotifySetup(SpotifyDisplay *theDisplay, const char *clientId, const char *clientSecret)
 {
   sp_Display = theDisplay;
@@ -65,6 +68,15 @@ void spotifyRefreshToken(const char *refreshToken)
   }
 }
 
+void handleShuffleState(PlayerDetails playerState)
+{
+  // Update shuffle state if it has changed
+  if (playerState.shuffleState != isShuffleEnabled)
+  {
+    isShuffleEnabled = playerState.shuffleState;
+  }
+}
+
 void handleCurrentlyPlaying(CurrentlyPlaying currentlyPlaying)
 {
   if (currentlyPlaying.trackUri != NULL)
@@ -76,6 +88,7 @@ void handleCurrentlyPlaying(CurrentlyPlaying currentlyPlaying)
 
       // We have a new Song, need to update the text
       sp_Display->printCurrentlyPlayingToScreen(currentlyPlaying);
+
     }
 
     albumArtChanged = sp_Display->processImageInfo(currentlyPlaying);
@@ -88,11 +101,16 @@ void handleCurrentlyPlaying(CurrentlyPlaying currentlyPlaying)
       // at updating the progress bar more often than checking the API
       songStartMillis = millis() - currentlyPlaying.progressMs;
       songDuration = currentlyPlaying.durationMs;
+      isTrackPlaying = true;
+
+      // Update the shuffle state
+      spotify.getPlayerDetails(handleShuffleState);
     }
     else
     {
       // Song doesn't seem to be playing, do not update the progress
       songStartMillis = 0;
+      isTrackPlaying = false;
     }
   }
 }

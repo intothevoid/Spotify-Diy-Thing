@@ -120,15 +120,17 @@ public:
     // Fill whats left black
     tft.fillRect(20 + barXWidth, progressStartY + 1, (screenWidth - 20) - (20 + barXWidth), 18, TFT_BLACK);
 
-    // Display elapsed time in format 00:00 
+    // Display elapsed time in format 00:00 to bottom left of the progress bar
     char elapsedString[6];
-    snprintf(elapsedString, sizeof(elapsedString), "%02d:%02d /", (progress / 1000) / 60, (progress / 1000) % 60);
-    tft.drawRightString(elapsedString, screenWidth - 5, progressStartY + 25, 2);
+    snprintf(elapsedString, sizeof(elapsedString), "%02d:%02d", (progress / 1000) / 60, (progress / 1000) % 60);
+    tft.setTextDatum(TL_DATUM);
+    tft.drawString(elapsedString, 5, progressStartY + 25, 2);
 
-    // Display total time in format 00:00 
+    // Display total time in format 00:00 to bottom right of the progress bar
     char totalString[6];
     snprintf(totalString, sizeof(totalString), "%02d:%02d", (duration / 1000) / 60, (duration / 1000) % 60);
-    tft.drawRightString(totalString, screenWidth - 5, progressStartY + 45, 2);
+    tft.setTextDatum(TR_DATUM);
+    tft.drawString(totalString, screenWidth - 5, progressStartY + 25, 2);
   }
 
   void printCurrentlyPlayingToScreen(CurrentlyPlaying currentlyPlaying)
@@ -146,42 +148,42 @@ public:
   {
     if (millis() > touchScreenCoolDownTime && handleTouched())
     {
-      drawTouchButtons(previousTrackStatus, nextTrackStatus, playPauseStatus, shuffleStatus);
-      if (previousTrackStatus)
+      drawTouchButtons(prevTrackPressed, nextTrackPressed, playState, shuffleState);
+      if (prevTrackPressed)
       {
+        Serial.println(">>>>Calling previous track");
         spotify_display->previousTrack();
       }
-      else if (nextTrackStatus)
+      else if (nextTrackPressed)
       {
+        Serial.println(">>>>Calling next track");
         spotify_display->nextTrack();
       }
-
       // Check play pause status and call the play pause function
-      // If playing then pause, if paused then play
-      if (playPauseStatus)
+      else if (playPausePressed)
       {
-        spotify_display->pause();
-        playPauseStatus = false;
+        if(playState)
+        {
+          Serial.println(">>>>Calling pause");
+          spotify_display->pause();
+          playState = false;
+        } 
+        else 
+        {
+          Serial.println(">>>>Calling play");
+          spotify_display->play();
+          playState = true;
+        }
       }
-      else
+      else if (shufflePressed)
       {
-        spotify_display->play();
-        playPauseStatus = true;
+        // Toggle shuffle status
+        Serial.println(">>>>Calling shuffle toggle");
+        spotify_display->toggleShuffle(!shuffleState);
+        shuffleState = !shuffleState;
       }
 
-      // Check shuffle status and toggle shuffle status
-      if (shuffleStatus)
-      {
-        spotify_display->toggleShuffle(false);
-        shuffleStatus = false;
-      }
-      else 
-      {
-        spotify_display->toggleShuffle(true);
-        shuffleStatus = true;
-      }
-
-      drawTouchButtons(false, false, playPauseStatus, shuffleStatus);
+      drawTouchButtons(false, false, playState, shuffleState);
       requestDueTime = 0;                                               // Some button has been pressed and acted on, it surely impacts the status so force a refresh
       touchScreenCoolDownTime = millis() + touchScreenCoolDownInterval; // Cool the touch off
     }
@@ -388,7 +390,7 @@ private:
       // Draw shuffle symbol - the 'S' character in green
       tft.setTextDatum(MC_DATUM);
       tft.setTextColor(TFT_GREEN, TFT_BLACK);
-      tft.drawString("S", shuffleButtonCenterX, firstRowCenterY + 3, 4);
+      tft.drawString("S", shuffleButtonCenterX, firstRowCenterY + 2, 4);
       tft.setTextColor(TFT_WHITE, TFT_BLACK);
     }
     else
@@ -396,7 +398,7 @@ private:
       // Draw shuffle symbol - the 'S' character in white
       tft.setTextDatum(MC_DATUM);
       tft.setTextColor(TFT_WHITE, TFT_BLACK);
-      tft.drawString("S", shuffleButtonCenterX, firstRowCenterY + 3, 4);
+      tft.drawString("S", shuffleButtonCenterX, firstRowCenterY + 2, 4);
     }
 
     // Draw forward Button

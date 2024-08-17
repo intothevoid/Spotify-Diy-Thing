@@ -11,10 +11,24 @@
 #define CYD28_DISPLAY_HOR_RES_MAX 320
 #define CYD28_DISPLAY_VER_RES_MAX 240
 
-bool playPauseStatus = false;
-bool shuffleStatus = false;
-bool previousTrackStatus = false;
-bool nextTrackStatus = false;
+bool shufflePressed = false;
+bool shuffleState = false;
+bool prevTrackPressed = false;
+bool nextTrackPressed = false;
+bool playPausePressed = false;
+bool playState = false;
+
+
+// Button locations
+const int playPauseButtonX = 40;
+const int playPauseButtonY = 30;
+const int shuffleButtonX = 280;
+const int shuffleButtonY = 30;
+const int previousTrackButtonX = 40;
+const int previousTrackButtonY = 90;
+const int nextTrackButtonX = 280;
+const int nextTrackButtonY = 90;
+const int buttonRadius = 16;
 
 //SPIClass mySpi = SPIClass(HSPI);
 //
@@ -32,8 +46,13 @@ void touchSetup(SpotifyArduino *spotifyObj) {
 }
 
 bool handleTouched() {
-  previousTrackStatus = false;
-  nextTrackStatus = false;
+  prevTrackPressed = false;
+  nextTrackPressed = false;
+  playPausePressed = false;
+  shufflePressed = false;
+  playState = false;
+  shuffleState = false; 
+
   //if (ts.tirqTouched() && ts.touched()) {
   if (ts.touched()) {
     CYD28_TS_Point p = ts.getPointScaled();
@@ -47,21 +66,25 @@ bool handleTouched() {
     Serial.println();
      
     // Handle button touches for play/pause, like, previous track, and next track
-    if (p.x > 20 && p.x < 100 && p.y > 30 && p.y < 65) {
-      Serial.println("Play/Pause true");
-      playPauseStatus = !playPauseStatus;
+    if (pow(p.x - playPauseButtonX, 2) + pow(p.y - playPauseButtonY, 2) <= pow(buttonRadius, 2)) {
+      Serial.println(">>>>Play/Pause true");
+      Serial.printf("Track playing: %d\n", isTrackPlaying);
+      playPausePressed = true;
+      playState = isTrackPlaying;
       return true;
-    } else if (p.x > 220 && p.x < 300 && p.y > 30 && p.y < 65) {
-      Serial.println("Shuffle true");
-      shuffleStatus = !shuffleStatus;
+    } else if (pow(p.x - shuffleButtonX, 2) + pow(p.y - shuffleButtonY, 2) <= pow(buttonRadius, 2)) {
+      Serial.println(">>>>Shuffle true");
+      Serial.printf("Shuffle enabled: %d\n", isShuffleEnabled);
+      shufflePressed = true;
+      shuffleState = isShuffleEnabled; // Toggle shuffle state
       return true;
-    } else if (p.x > 20 && p.x < 100 && p.y > 90 && p.y < 120) {
-      Serial.println("prev true");
-      previousTrackStatus = true;
+    } else if (pow(p.x - previousTrackButtonX, 2) + pow(p.y - previousTrackButtonY, 2) <= pow(buttonRadius, 2)) {
+      Serial.println(">>>>Previous true");
+      prevTrackPressed = true;
       return true;
-    } else if (p.x > 220 && p.x < 300 && p.y > 90 && p.y < 120) {
-      Serial.println("next true");
-      nextTrackStatus = true;
+    } else if (pow(p.x - nextTrackButtonX, 2) + pow(p.y - nextTrackButtonY, 2) <= pow(buttonRadius, 2)) {
+      Serial.println(">>>>Next true");
+      nextTrackPressed = true;
       return true;
     }
   }
