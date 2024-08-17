@@ -47,16 +47,20 @@ bool handleTouched() {
     Serial.println();
      
     // Handle button touches for play/pause, like, previous track, and next track
-    if (p.x > 20 && p.x < 100 && p.y > 180 && p.y < 220) {
-      playPauseStatus = true;
+    if (p.x > 20 && p.x < 100 && p.y > 30 && p.y < 65) {
+      Serial.println("Play/Pause true");
+      playPauseStatus = !playPauseStatus;
       return true;
-    } else if (p.x > 120 && p.x < 200 && p.y > 180 && p.y < 220) {
-      shuffleStatus = true;
+    } else if (p.x > 220 && p.x < 300 && p.y > 30 && p.y < 65) {
+      Serial.println("Shuffle true");
+      shuffleStatus = !shuffleStatus;
       return true;
-    } else if (p.x > 220 && p.x < 300 && p.y > 180 && p.y < 220) {
+    } else if (p.x > 20 && p.x < 100 && p.y > 90 && p.y < 120) {
+      Serial.println("prev true");
       previousTrackStatus = true;
       return true;
-    } else if (p.x > 20 && p.x < 100 && p.y > 240 && p.y < 280) {
+    } else if (p.x > 220 && p.x < 300 && p.y > 90 && p.y < 120) {
+      Serial.println("next true");
       nextTrackStatus = true;
       return true;
     }

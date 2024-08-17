@@ -151,20 +151,24 @@ public:
       if (playPauseStatus)
       {
         spotify_display->pause();
+        playPauseStatus = false;
       }
       else
       {
         spotify_display->play();
+        playPauseStatus = true;
       }
 
       // Check shuffle status and toggle shuffle status
       if (shuffleStatus)
       {
-        spotify_display->toggleShuffle(true);
+        spotify_display->toggleShuffle(false);
+        shuffleStatus = false;
       }
       else 
       {
-        spotify_display->toggleShuffle(false);
+        spotify_display->toggleShuffle(true);
+        shuffleStatus = true;
       }
 
       drawTouchButtons(false, false, false, false);
@@ -326,12 +330,12 @@ private:
   void drawTouchButtons(bool backStatus, bool forwardStatus, bool playPauseStatus, bool shuffleStatus)
   {
     // First row of buttons - Play/Pause and Like
-    int firstRowCenterY = 25;
+    int firstRowCenterY = 30;
     int playPauseButtonCenterX = 40;
     int shuffleButtonCenterX = screenWidth - playPauseButtonCenterX;
 
     // Second row of buttons - Back and Forward
-    int secondRowCenterY = firstRowCenterY + 50;
+    int secondRowCenterY = firstRowCenterY + 60;
     int prevButtonCenterX = 40;
     int nextButtonCenterX = screenWidth - prevButtonCenterX;
 
@@ -341,14 +345,14 @@ private:
     tft.drawCircle(playPauseButtonCenterX, firstRowCenterY, 16, TFT_WHITE);
     if (playPauseStatus)
     {
-      // Draw play symbol (triangle facing right)
-      tft.fillTriangle(playPauseButtonCenterX - 6, firstRowCenterY - 10, playPauseButtonCenterX - 6, firstRowCenterY + 10, playPauseButtonCenterX + 6, firstRowCenterY, TFT_GREEN);
-    }
-    else
-    {
       // Draw pause symbol (two parallel lines)
       tft.fillRect(playPauseButtonCenterX - 6, firstRowCenterY - 10, 4, 20, TFT_WHITE);
       tft.fillRect(playPauseButtonCenterX + 2, firstRowCenterY - 10, 4, 20, TFT_WHITE);
+    }
+    else
+    {
+      // Draw play symbol (triangle facing right)
+      tft.fillTriangle(playPauseButtonCenterX - 6, firstRowCenterY - 10, playPauseButtonCenterX - 6, firstRowCenterY + 10, playPauseButtonCenterX + 6, firstRowCenterY, TFT_GREEN);
     }
 
     // Draw back Button
@@ -371,14 +375,17 @@ private:
     tft.drawCircle(shuffleButtonCenterX, firstRowCenterY, 16, TFT_WHITE);
     if (shuffleStatus)
     {
-      // Draw shuffle symbol (two crossed arrows)
-      tft.fillTriangle(shuffleButtonCenterX - 6, firstRowCenterY - 10, shuffleButtonCenterX + 6, firstRowCenterY, shuffleButtonCenterX - 6, firstRowCenterY + 10, TFT_GREEN);
-      tft.fillTriangle(shuffleButtonCenterX - 6, secondRowCenterY - 10, shuffleButtonCenterX + 6, secondRowCenterY, shuffleButtonCenterX + 6, secondRowCenterY + 10, TFT_GREEN);
+      // Draw shuffle symbol - the 'S' character in green
+      tft.setTextDatum(MC_DATUM);
+      tft.setTextColor(TFT_GREEN, TFT_BLACK);
+      tft.drawString("S", shuffleButtonCenterX, firstRowCenterY + 5, 4);
     }
     else
     {
-      tft.drawTriangle(shuffleButtonCenterX - 6, firstRowCenterY - 10, shuffleButtonCenterX + 6, firstRowCenterY, shuffleButtonCenterX - 6, firstRowCenterY + 10, TFT_WHITE);
-      tft.drawTriangle(shuffleButtonCenterX - 6, secondRowCenterY - 10, shuffleButtonCenterX + 6, secondRowCenterY, shuffleButtonCenterX + 6, secondRowCenterY + 10, TFT_WHITE);
+      // Draw shuffle symbol - the 'S' character in white
+      tft.setTextDatum(MC_DATUM);
+      tft.setTextColor(TFT_WHITE, TFT_BLACK);
+      tft.drawString("S", shuffleButtonCenterX, firstRowCenterY + 5, 4);
     }
 
     // Draw forward Button
