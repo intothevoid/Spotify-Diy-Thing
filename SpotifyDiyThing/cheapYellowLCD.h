@@ -119,6 +119,16 @@ public:
 
     // Fill whats left black
     tft.fillRect(20 + barXWidth, progressStartY + 1, (screenWidth - 20) - (20 + barXWidth), 18, TFT_BLACK);
+
+    // Display elapsed time in format 00:00 
+    char elapsedString[6];
+    snprintf(elapsedString, sizeof(elapsedString), "%02d:%02d /", (progress / 1000) / 60, (progress / 1000) % 60);
+    tft.drawRightString(elapsedString, screenWidth - 5, progressStartY + 25, 2);
+
+    // Display total time in format 00:00 
+    char totalString[6];
+    snprintf(totalString, sizeof(totalString), "%02d:%02d", (duration / 1000) / 60, (duration / 1000) % 60);
+    tft.drawRightString(totalString, screenWidth - 5, progressStartY + 45, 2);
   }
 
   void printCurrentlyPlayingToScreen(CurrentlyPlaying currentlyPlaying)
@@ -171,7 +181,7 @@ public:
         shuffleStatus = true;
       }
 
-      drawTouchButtons(false, false, false, false);
+      drawTouchButtons(false, false, playPauseStatus, shuffleStatus);
       requestDueTime = 0;                                               // Some button has been pressed and acted on, it surely impacts the status so force a refresh
       touchScreenCoolDownTime = millis() + touchScreenCoolDownInterval; // Cool the touch off
     }
@@ -378,14 +388,15 @@ private:
       // Draw shuffle symbol - the 'S' character in green
       tft.setTextDatum(MC_DATUM);
       tft.setTextColor(TFT_GREEN, TFT_BLACK);
-      tft.drawString("S", shuffleButtonCenterX, firstRowCenterY + 5, 4);
+      tft.drawString("S", shuffleButtonCenterX, firstRowCenterY + 3, 4);
+      tft.setTextColor(TFT_WHITE, TFT_BLACK);
     }
     else
     {
       // Draw shuffle symbol - the 'S' character in white
       tft.setTextDatum(MC_DATUM);
       tft.setTextColor(TFT_WHITE, TFT_BLACK);
-      tft.drawString("S", shuffleButtonCenterX, firstRowCenterY + 5, 4);
+      tft.drawString("S", shuffleButtonCenterX, firstRowCenterY + 3, 4);
     }
 
     // Draw forward Button
