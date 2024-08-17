@@ -74,7 +74,7 @@ WiFiClientSecure client;
 //------- Replace the following! ------
 
 // Country code, including this is advisable
-#define SPOTIFY_MARKET "IE"
+#define SPOTIFY_MARKET "AU"
 //------- ---------------------- ------
 
 // ----------------------------

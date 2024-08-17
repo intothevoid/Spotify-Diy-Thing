@@ -91,7 +91,7 @@ public:
   {
     tft.fillScreen(TFT_BLACK);
 
-    drawTouchButtons(false, false);
+    drawTouchButtons(false, false, false, false);
   }
 
   void displayTrackProgress(long progress, long duration)
@@ -136,7 +136,7 @@ public:
   {
     if (millis() > touchScreenCoolDownTime && handleTouched())
     {
-      drawTouchButtons(previousTrackStatus, nextTrackStatus);
+      drawTouchButtons(previousTrackStatus, nextTrackStatus, playPauseStatus, shuffleStatus);
       if (previousTrackStatus)
       {
         spotify_display->previousTrack();
@@ -145,7 +145,29 @@ public:
       {
         spotify_display->nextTrack();
       }
-      drawTouchButtons(false, false);
+
+      // Check play pause status and call the play pause function
+      // If playing then pause, if paused then play
+      if (playPauseStatus)
+      {
+        spotify_display->pause();
+      }
+      else
+      {
+        spotify_display->play();
+      }
+
+      // Check shuffle status and toggle shuffle status
+      if (shuffleStatus)
+      {
+        spotify_display->toggleShuffle(true);
+      }
+      else 
+      {
+        spotify_display->toggleShuffle(false);
+      }
+
+      drawTouchButtons(false, false, false, false);
       requestDueTime = 0;                                               // Some button has been pressed and acted on, it surely impacts the status so force a refresh
       touchScreenCoolDownTime = millis() + touchScreenCoolDownInterval; // Cool the touch off
     }
@@ -301,41 +323,77 @@ private:
     return decodeStatus;
   }
 
-  void drawTouchButtons(bool backStatus, bool forwardStatus)
+  void drawTouchButtons(bool backStatus, bool forwardStatus, bool playPauseStatus, bool shuffleStatus)
   {
+    // First row of buttons - Play/Pause and Like
+    int firstRowCenterY = 25;
+    int playPauseButtonCenterX = 40;
+    int shuffleButtonCenterX = screenWidth - playPauseButtonCenterX;
 
-    int buttonCenterY = 75;
-    int leftButtonCenterX = 40;
-    int rightButtonCenterX = screenWidth - leftButtonCenterX;
+    // Second row of buttons - Back and Forward
+    int secondRowCenterY = firstRowCenterY + 50;
+    int prevButtonCenterX = 40;
+    int nextButtonCenterX = screenWidth - prevButtonCenterX;
+
+    // Draw play / pause button
+    // The button is shaped like a play button when paused and a pause button when playing
+    tft.fillCircle(playPauseButtonCenterX, firstRowCenterY, 16, TFT_BLACK);
+    tft.drawCircle(playPauseButtonCenterX, firstRowCenterY, 16, TFT_WHITE);
+    if (playPauseStatus)
+    {
+      // Draw play symbol (triangle facing right)
+      tft.fillTriangle(playPauseButtonCenterX - 6, firstRowCenterY - 10, playPauseButtonCenterX - 6, firstRowCenterY + 10, playPauseButtonCenterX + 6, firstRowCenterY, TFT_GREEN);
+    }
+    else
+    {
+      // Draw pause symbol (two parallel lines)
+      tft.fillRect(playPauseButtonCenterX - 6, firstRowCenterY - 10, 4, 20, TFT_WHITE);
+      tft.fillRect(playPauseButtonCenterX + 2, firstRowCenterY - 10, 4, 20, TFT_WHITE);
+    }
 
     // Draw back Button
-    tft.fillCircle(leftButtonCenterX, buttonCenterY, 16, TFT_BLACK);
-    tft.drawCircle(leftButtonCenterX, buttonCenterY, 16, TFT_WHITE);
+    tft.fillCircle(prevButtonCenterX, secondRowCenterY, 16, TFT_BLACK);
+    tft.drawCircle(prevButtonCenterX, secondRowCenterY, 16, TFT_WHITE);
     if (backStatus)
     {
-      tft.fillCircle(leftButtonCenterX, buttonCenterY, 15, TFT_GREEN);
+      tft.fillCircle(prevButtonCenterX, secondRowCenterY, 15, TFT_GREEN);
     }
     else
     {
-      tft.drawCircle(leftButtonCenterX, buttonCenterY, 15, TFT_WHITE);
+      tft.drawCircle(prevButtonCenterX, secondRowCenterY, 15, TFT_WHITE);
     }
 
-    tft.fillTriangle(leftButtonCenterX - 4, buttonCenterY, leftButtonCenterX + 6, buttonCenterY - 10, leftButtonCenterX + 6, buttonCenterY + 10, TFT_WHITE);
-    tft.drawRect(leftButtonCenterX - 6, buttonCenterY - 10, 2, 20, TFT_WHITE);
+    tft.fillTriangle(prevButtonCenterX - 4, secondRowCenterY, prevButtonCenterX + 6, secondRowCenterY - 10, prevButtonCenterX + 6, secondRowCenterY + 10, TFT_WHITE);
+    tft.drawRect(prevButtonCenterX - 6, secondRowCenterY - 10, 2, 20, TFT_WHITE);
+
+    // Draw shuffle button
+    tft.fillCircle(shuffleButtonCenterX, firstRowCenterY, 16, TFT_BLACK);
+    tft.drawCircle(shuffleButtonCenterX, firstRowCenterY, 16, TFT_WHITE);
+    if (shuffleStatus)
+    {
+      // Draw shuffle symbol (two crossed arrows)
+      tft.fillTriangle(shuffleButtonCenterX - 6, firstRowCenterY - 10, shuffleButtonCenterX + 6, firstRowCenterY, shuffleButtonCenterX - 6, firstRowCenterY + 10, TFT_GREEN);
+      tft.fillTriangle(shuffleButtonCenterX - 6, secondRowCenterY - 10, shuffleButtonCenterX + 6, secondRowCenterY, shuffleButtonCenterX + 6, secondRowCenterY + 10, TFT_GREEN);
+    }
+    else
+    {
+      tft.drawTriangle(shuffleButtonCenterX - 6, firstRowCenterY - 10, shuffleButtonCenterX + 6, firstRowCenterY, shuffleButtonCenterX - 6, firstRowCenterY + 10, TFT_WHITE);
+      tft.drawTriangle(shuffleButtonCenterX - 6, secondRowCenterY - 10, shuffleButtonCenterX + 6, secondRowCenterY, shuffleButtonCenterX + 6, secondRowCenterY + 10, TFT_WHITE);
+    }
 
     // Draw forward Button
-    tft.fillCircle(rightButtonCenterX, buttonCenterY, 16, TFT_BLACK);
-    tft.drawCircle(rightButtonCenterX, buttonCenterY, 16, TFT_WHITE);
+    tft.fillCircle(nextButtonCenterX, secondRowCenterY, 16, TFT_BLACK);
+    tft.drawCircle(nextButtonCenterX, secondRowCenterY, 16, TFT_WHITE);
     if (forwardStatus)
     {
-      tft.fillCircle(rightButtonCenterX, buttonCenterY, 15, TFT_GREEN);
+      tft.fillCircle(nextButtonCenterX, secondRowCenterY, 15, TFT_GREEN);
     }
     else
     {
-      tft.drawCircle(rightButtonCenterX, buttonCenterY, 15, TFT_WHITE);
+      tft.drawCircle(nextButtonCenterX, secondRowCenterY, 15, TFT_WHITE);
     }
 
-    tft.fillTriangle(rightButtonCenterX + 4, buttonCenterY, rightButtonCenterX - 6, buttonCenterY - 10, rightButtonCenterX - 6, buttonCenterY + 10, TFT_WHITE);
-    tft.drawRect(rightButtonCenterX + 6, buttonCenterY - 10, 2, 20, TFT_WHITE);
+    tft.fillTriangle(nextButtonCenterX + 4, secondRowCenterY, nextButtonCenterX - 6, secondRowCenterY - 10, nextButtonCenterX - 6, secondRowCenterY + 10, TFT_WHITE);
+    tft.drawRect(nextButtonCenterX + 6, secondRowCenterY - 10, 2, 20, TFT_WHITE);
   }
 };

@@ -11,6 +11,8 @@
 #define CYD28_DISPLAY_HOR_RES_MAX 320
 #define CYD28_DISPLAY_VER_RES_MAX 240
 
+bool playPauseStatus = false;
+bool shuffleStatus = false;
 bool previousTrackStatus = false;
 bool nextTrackStatus = false;
 
@@ -43,17 +45,21 @@ bool handleTouched() {
     Serial.print(p.y);
     delay(30);
     Serial.println();
-    if (p.x < 120) {
-      previousTrackStatus = true;
-      //spotify_touch->previousTrack();
+     
+    // Handle button touches for play/pause, like, previous track, and next track
+    if (p.x > 20 && p.x < 100 && p.y > 180 && p.y < 220) {
+      playPauseStatus = true;
       return true;
-    } else if (p.x > 200) {
+    } else if (p.x > 120 && p.x < 200 && p.y > 180 && p.y < 220) {
+      shuffleStatus = true;
+      return true;
+    } else if (p.x > 220 && p.x < 300 && p.y > 180 && p.y < 220) {
+      previousTrackStatus = true;
+      return true;
+    } else if (p.x > 20 && p.x < 100 && p.y > 240 && p.y < 280) {
       nextTrackStatus = true;
-      //spotify_touch->nextTrack();
       return true;
     }
   }
-
   return false;
-
 }
